@@ -1,4 +1,4 @@
-package com.github.caster.solutions;
+package com.github.caster.solutions.y2024;
 
 import com.github.caster.shared.BaseSolution;
 import lombok.val;
@@ -6,13 +6,12 @@ import lombok.val;
 import java.util.Arrays;
 import java.util.stream.LongStream;
 
-import static java.util.Arrays.stream;
-import static java.util.stream.IntStream.iterate;
+import static com.github.caster.shared.StreamUtils.iterateIndicesOf;
+import static com.github.caster.shared.StreamUtils.streamWithoutIndex;
 import static com.github.caster.shared.input.InputLoader.InputType.INPUT;
 import static com.github.caster.shared.input.InputLoader.parseLongs;
 import static com.github.caster.shared.input.InputLoader.toColumns;
-import static com.github.caster.shared.StreamUtils.iterateIndicesOf;
-import static com.github.caster.shared.StreamUtils.streamWithoutIndex;
+import static java.util.Arrays.stream;
 
 public final class Day2 extends BaseSolution {
 
