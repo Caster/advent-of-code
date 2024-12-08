@@ -2,6 +2,7 @@ package com.github.caster.shared.input;
 
 import com.github.caster.shared.map.ResettableMap;
 import com.github.caster.shared.math.Matrix;
+import lombok.val;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -11,6 +12,8 @@ import java.nio.file.Path;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.LongStream;
 import java.util.stream.Stream;
 
@@ -26,6 +29,8 @@ public final class InputLoader {
         INPUT
     }
 
+    private static final Pattern YEAR_PART = Pattern.compile("y(\\d{4})");
+
     private InputType inputType;
     private Path inputPath;
 
@@ -34,7 +39,17 @@ public final class InputLoader {
                 .filter(el -> el.getClassName().startsWith("com.github.caster.solutions"))
                 .findFirst()
                 .map(StackTraceElement::getClassName)
-                .map(fqcn -> fqcn.substring(fqcn.lastIndexOf('.') + 1).toLowerCase())
+                .map(fqcn -> {
+                    val yearPart = stream(fqcn.split("\\."))
+                            .map(YEAR_PART::matcher)
+                            .filter(Matcher::matches)
+                            .map(matcher -> matcher.group(1))
+                            .findFirst()
+                            .orElseThrow(() ->
+                                    new IllegalStateException("Could not find year part in FQCN [%s]".formatted(fqcn)));
+                    val dayPart = fqcn.substring(fqcn.lastIndexOf('.') + 1).toLowerCase();
+                    return yearPart + "/" + dayPart;
+                })
                 .orElseThrow();
         final String resourceBaseName = inputToLoad.name().toLowerCase();
 

@@ -1,4 +1,4 @@
-package com.github.caster.solutions;
+package com.github.caster.solutions.y2024;
 
 import com.github.caster.shared.BaseSolution;
 import com.github.caster.shared.map.Direction;

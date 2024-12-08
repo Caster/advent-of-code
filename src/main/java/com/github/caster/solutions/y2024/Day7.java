@@ -1,16 +1,16 @@
-package com.github.caster.solutions;
+package com.github.caster.solutions.y2024;
 
+import com.github.caster.shared.BaseSolution;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.Delegate;
 import lombok.val;
-import com.github.caster.shared.BaseSolution;
 
 import java.util.function.LongBinaryOperator;
 
-import static java.lang.Long.parseLong;
 import static com.github.caster.shared.input.InputLoader.InputType.INPUT;
 import static com.github.caster.shared.input.InputLoader.parseLongs;
 import static com.github.caster.shared.input.InputLoader.toColumns;
+import static java.lang.Long.parseLong;
 
 public final class Day7 extends BaseSolution {
 
