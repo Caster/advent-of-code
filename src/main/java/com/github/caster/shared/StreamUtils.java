@@ -6,7 +6,10 @@ import java.util.stream.LongStream;
 public final class StreamUtils {
 
     public static IntStream iterateFromTo(final int startInclusive, final int endExclusive) {
-        return IntStream.iterate(startInclusive, i -> i < endExclusive, i -> i + 1);
+        if (endExclusive > startInclusive) {
+            return IntStream.iterate(startInclusive, i -> i < endExclusive, i -> i + 1);
+        }
+        return IntStream.iterate(startInclusive, i -> i > endExclusive, i -> i - 1);
     }
 
     public static IntStream iterateIndicesOf(final char[] array) {
