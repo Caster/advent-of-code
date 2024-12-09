@@ -9,7 +9,6 @@ import java.util.function.LongBinaryOperator;
 
 import static com.github.caster.shared.input.InputLoader.InputType.INPUT;
 import static com.github.caster.shared.input.InputLoader.parseLongs;
-import static com.github.caster.shared.input.InputLoader.toColumns;
 import static java.lang.Long.parseLong;
 
 public final class Day7 extends BaseSolution {
@@ -25,7 +24,7 @@ public final class Day7 extends BaseSolution {
         static CalibrationEquation parse(final String line) {
             val split = line.split(": ");
             val expected = parseLong(split[0]);
-            val operands = toColumns().andThen(parseLongs()).apply(split[1]).toArray();
+            val operands = parseLongs(split[1]);
             return new CalibrationEquation(expected, operands);
         }
 

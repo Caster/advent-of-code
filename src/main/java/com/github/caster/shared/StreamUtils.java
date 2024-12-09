@@ -1,23 +1,23 @@
 package com.github.caster.shared;
 
+import java.util.List;
 import java.util.stream.IntStream;
 import java.util.stream.LongStream;
 
+import static java.util.stream.IntStream.range;
+
 public final class StreamUtils {
 
-    public static IntStream iterateFromTo(final int startInclusive, final int endExclusive) {
-        if (endExclusive > startInclusive) {
-            return IntStream.iterate(startInclusive, i -> i < endExclusive, i -> i + 1);
-        }
-        return IntStream.iterate(startInclusive, i -> i > endExclusive, i -> i - 1);
-    }
-
     public static IntStream iterateIndicesOf(final char[] array) {
-        return iterateFromTo(0, array.length);
+        return range(0, array.length);
     }
 
     public static IntStream iterateIndicesOf(final long[] array) {
-        return iterateFromTo(0, array.length);
+        return range(0, array.length);
+    }
+
+    public static <T> IntStream iterateIndicesOf(final List<T> list) {
+        return range(0, list.size());
     }
 
     public static LongStream streamWithoutIndex(final long[] array, final int indexToRemove) {

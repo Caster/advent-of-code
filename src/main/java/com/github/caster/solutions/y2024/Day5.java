@@ -4,11 +4,12 @@ import com.github.caster.shared.BaseSolution;
 import lombok.val;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
 
 import static com.github.caster.shared.input.InputLoader.InputType.INPUT;
+import static com.github.caster.shared.input.InputLoader.asList;
+import static com.github.caster.shared.input.InputLoader.parseLongs;
 import static java.lang.Long.parseLong;
 import static java.util.List.copyOf;
 import static java.util.function.Predicate.not;
@@ -24,13 +25,12 @@ public final class Day5 extends BaseSolution {
     }
 
     private void readRulesAndUpdates() {
-        read.lines().forEach(line -> {
-            if (line.indexOf('|') >= 0) {
+        read.with(sections -> {
+            sections.next().lines().forEach(line -> {
                 val split = line.split("\\|");
                 orderingRules.add(new OrderingRule(parseLong(split[0]), parseLong(split[1])));
-            } else {
-                updates.add(new Update(Arrays.stream(line.split(",")).map(Long::parseLong).toList()));
-            }
+            });
+            sections.next().lines().forEach(line -> updates.add(new Update(asList(parseLongs(line, ",")))));
         });
     }
 
