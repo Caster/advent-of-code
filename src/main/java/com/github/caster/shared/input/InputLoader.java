@@ -1,7 +1,6 @@
 package com.github.caster.shared.input;
 
-import com.github.caster.shared.map.ResettableMap;
-import com.github.caster.shared.math.Matrix;
+import lombok.experimental.Delegate;
 import lombok.val;
 
 import java.io.IOException;
@@ -9,16 +8,11 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Consumer;
-import java.util.function.Function;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.LongStream;
-import java.util.stream.Stream;
 
 import static java.util.Arrays.stream;
-import static java.util.function.Predicate.not;
 
 public final class InputLoader {
 
@@ -32,7 +26,9 @@ public final class InputLoader {
     private static final Pattern YEAR_PART = Pattern.compile("y(\\d{4})");
 
     private InputType inputType;
-    private Path inputPath;
+
+    @Delegate
+    private Section section;
 
     public void from(final InputType inputToLoad) {
         final String directory = stream(Thread.currentThread().getStackTrace())
@@ -59,10 +55,10 @@ public final class InputLoader {
         if (resourceUrl == null) {
             throw new RuntimeException("Unknown resource [%s]".formatted(resourceBaseName));
         }
-        try {
-            inputPath = Path.of(resourceUrl.toURI());
+        try (val inputLinesStream = Files.lines(Path.of(resourceUrl.toURI()))) {
             inputType = inputToLoad;
-        } catch (final URISyntaxException e) {
+            section = new Section(inputLinesStream.toList());
+        } catch (final IOException | URISyntaxException e) {
             throw new RuntimeException(e);
         }
     }
@@ -71,62 +67,24 @@ public final class InputLoader {
         return inputType;
     }
 
-    public String firstLine() {
-        return lines().findFirst().orElseThrow();
+    public static List<Long> asList(final long[] array) {
+        return stream(array).boxed().toList();
     }
 
-    public Stream<String> lines() {
-        try {
-            return Files.lines(inputPath).filter(not(String::isBlank));
-        } catch (final IOException e) {
-            throw new RuntimeException(e);
-        }
+    public static long[] parseLongs(final String input) {
+        return stream(parseColumns(input)).mapToLong(Long::parseLong).toArray();
     }
 
-    public ResettableMap map() {
-        return new ResettableMap(lines().map(String::toCharArray).toArray(char[][]::new));
+    public static long[] parseLongs(final String input, final String splitByRegex) {
+        return stream(parseColumns(input, splitByRegex)).mapToLong(Long::parseLong).toArray();
     }
 
-    public Matrix matrix() {
-        final int numberOfColumns = (int) streamFirstLine().flatMap(toColumns()).count();
-        final int numberOfRows = (int) lines().count();
-        return new Matrix(
-                numberOfColumns,
-                numberOfRows,
-                lines().map(toColumns().andThen(parseLongs()))
-        );
+    public static String[] parseColumns(final String input) {
+        return parseColumns(input, "\\s+");
     }
 
-    private Stream<String> streamFirstLine() {
-        return lines().limit(1);
-    }
-
-    public static Function<String, Stream<String>> toColumns() {
-        return line -> stream(line.split("\\s+"));
-    }
-
-    public static Function<Stream<String>, LongStream> parseLongs() {
-        return strings -> strings.mapToLong(Long::parseLong);
-    }
-
-    public String string() {
-        try {
-            return Files.readString(inputPath);
-        } catch (final IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public void sections(Consumer<Section>... sections) {
-        final AtomicInteger currentSectionIndex = new AtomicInteger();
-        lines().forEach(line -> {
-            if (line.isBlank()) {
-                currentSectionIndex.incrementAndGet();
-                return;
-            }
-
-//            sections[currentSectionIndex.get()].accept();
-        });
+    public static String[] parseColumns(final String input, final String splitByRegex) {
+        return input.split(splitByRegex);
     }
 
 }

@@ -5,8 +5,8 @@ import lombok.val;
 
 import java.util.stream.Stream;
 
-import static com.github.caster.shared.StreamUtils.iterateFromTo;
 import static java.util.function.Function.identity;
+import static java.util.stream.IntStream.range;
 
 public final class ResettableMap {
 
@@ -53,8 +53,8 @@ public final class ResettableMap {
     }
 
     public Stream<Cell> stream() {
-        return iterateFromTo(0, numRows)
-                .mapToObj(y -> iterateFromTo(0, numColumns).mapToObj(x -> new Cell(get(y, x), x, y)))
+        return range(0, numRows)
+                .mapToObj(y -> range(0, numColumns).mapToObj(x -> new Cell(get(y, x), x, y)))
                 .flatMap(identity());
     }
 

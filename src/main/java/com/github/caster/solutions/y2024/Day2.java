@@ -1,16 +1,14 @@
 package com.github.caster.solutions.y2024;
 
 import com.github.caster.shared.BaseSolution;
+import com.github.caster.shared.input.InputLoader;
 import lombok.val;
 
 import java.util.Arrays;
-import java.util.stream.LongStream;
 
 import static com.github.caster.shared.StreamUtils.iterateIndicesOf;
 import static com.github.caster.shared.StreamUtils.streamWithoutIndex;
 import static com.github.caster.shared.input.InputLoader.InputType.INPUT;
-import static com.github.caster.shared.input.InputLoader.parseLongs;
-import static com.github.caster.shared.input.InputLoader.toColumns;
 import static java.util.Arrays.stream;
 
 public final class Day2 extends BaseSolution {
@@ -22,11 +20,9 @@ public final class Day2 extends BaseSolution {
     @Override
     protected void part1() {
         System.out.println(
-                read.lines()
-                        .map(toColumns().andThen(parseLongs()).andThen(LongStream::toArray))
-                        .filter(Day2::isSafeReport)
-                        .count() +
-                " reports are safe");
+                read.lines().map(InputLoader::parseLongs).filter(Day2::isSafeReport).count()
+                        + " reports are safe"
+        );
     }
 
     private static boolean isSafeReport(final long[] report) {
@@ -50,11 +46,8 @@ public final class Day2 extends BaseSolution {
     @Override
     protected void part2() {
         System.out.println(
-                read.lines()
-                        .map(toColumns().andThen(parseLongs()).andThen(LongStream::toArray))
-                        .filter(Day2::isTolerablySafeReport)
-                        .count() +
-                        " reports are tolerably safe");
+                read.lines().map(InputLoader::parseLongs).filter(Day2::isTolerablySafeReport).count()
+                        + " reports are tolerably safe");
     }
 
     private static boolean isTolerablySafeReport(final long[] report) {

@@ -7,25 +7,18 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.LongStream;
 import java.util.stream.Stream;
 
-import static java.util.stream.IntStream.iterate;
+import static java.util.stream.IntStream.range;
 
 public final class Matrix {
 
     private final long[][] columns;
 
-    public Matrix(final int numberOfColumns, final int numberOfRows, final Stream<LongStream> values) {
-        this.columns = new long[numberOfColumns][numberOfRows];
-        val rowCount = new AtomicInteger(0);
-        val colCount = new AtomicInteger(0);
-        values.forEachOrdered(row -> {
-            row.forEachOrdered(column -> columns[colCount.getAndIncrement()][rowCount.get()] = column);
-            rowCount.incrementAndGet();
-            colCount.set(0);
-        });
+    public Matrix(final Stream<long[]> columns) {
+        this.columns = columns.toArray(long[][]::new);
     }
 
     public Vector column(final int index) {
-        return new Vector(this.columns[index]);
+        return new Vector(columns[index]);
     }
 
     public void sortColumns() {
@@ -33,19 +26,16 @@ public final class Matrix {
     }
 
     public Stream<LongStream> stream() {
-        return iterate(0, i -> i < columns[0].length, i -> i + 1)
-                .mapToObj(rowIndex -> iterate(0, i -> i < columns.length, i -> i + 1)
-                        .mapToLong(columnIndex -> columns[columnIndex][rowIndex]));
+        return Arrays.stream(columns).map(Arrays::stream);
     }
 
     public Stream<LongStream> streamTransposed() {
-        return iterate(0, i -> i < columns.length, i -> i + 1)
-                .mapToObj(columnIndex -> iterate(0, i -> i < columns[0].length, i -> i + 1)
-                        .mapToLong(rowIndex -> columns[columnIndex][rowIndex]));
+        return range(0, columns[0].length)
+                .mapToObj(rowIndex -> Arrays.stream(columns).mapToLong(column -> column[rowIndex]));
     }
 
     public Matrix transposed() {
-        return new Matrix(columns[0].length, columns.length, streamTransposed());
+        return new Matrix(streamTransposed().map(LongStream::toArray));
     }
 
     @Override

@@ -7,8 +7,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static com.github.caster.shared.StreamUtils.iterateFromTo;
+import static com.github.caster.shared.StreamUtils.iterateIndicesOf;
 import static com.github.caster.shared.input.InputLoader.InputType.INPUT;
+import static java.util.stream.IntStream.range;
 
 public final class Day9 extends BaseSolution {
 
@@ -24,7 +25,7 @@ public final class Day9 extends BaseSolution {
         val currDiskIndex = new AtomicInteger();
         for (var i = 0; i < input.length; i++) {
             val finalI = i;
-            iterateFromTo(0, input[i]).forEach(_ ->
+            range(0, input[i]).forEach(_ ->
                     disk[currDiskIndex.getAndIncrement()] = finalI % 2 == 0 ? (char) ('0' + (finalI / 2)) : '.'
             );
         }
@@ -63,9 +64,7 @@ public final class Day9 extends BaseSolution {
 
         @Override
         public long checksum() {
-            return iterateFromTo(start, start + size)
-                    .mapToLong(i -> id * i)
-                    .sum();
+            return range(start, start + size).mapToLong(i -> id * i).sum();
         }
 
     }
@@ -94,16 +93,16 @@ public final class Day9 extends BaseSolution {
             lastBlockStart += input[i];
         }
 
-        iterateFromTo(input.length / 2, -1).forEach(fileId -> {
+        range(0, input.length / 2 + 1).map(i -> input.length / 2 - i).forEach(fileId -> {
             // find file on disk
-            val fileIndex = iterateFromTo(0, spaces.size())
+            val fileIndex = iterateIndicesOf(spaces)
                     .filter(i -> spaces.get(i) instanceof final FileOnDisk f && f.id() == fileId)
                     .findFirst()
                     .orElseThrow();
             val file = (FileOnDisk) spaces.get(fileIndex);
 
             // find space to move into
-            val fittingGapIndexOptional = iterateFromTo(0, spaces.size())
+            val fittingGapIndexOptional = iterateIndicesOf(spaces)
                     .filter(i -> spaces.get(i) instanceof final GapOnDisk g
                             && g.size >= file.size()
                             && g.start() < file.start())

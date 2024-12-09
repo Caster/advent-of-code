@@ -3,7 +3,7 @@ package com.github.caster.solutions.y2024;
 import com.github.caster.shared.BaseSolution;
 import lombok.val;
 
-import static com.github.caster.shared.input.InputLoader.InputType.EXAMPLE;
+import static com.github.caster.shared.input.InputLoader.InputType.INPUT;
 import static java.util.function.Function.identity;
 import static java.util.stream.Collectors.counting;
 import static java.util.stream.Collectors.groupingBy;
@@ -11,7 +11,7 @@ import static java.util.stream.Collectors.groupingBy;
 public final class Day1 extends BaseSolution {
 
     public Day1() {
-        read.from(EXAMPLE);
+        read.from(INPUT);
     }
 
     @Override
