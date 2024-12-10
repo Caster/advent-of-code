@@ -41,14 +41,14 @@ public final class Matrix {
     @Override
     public String toString() {
         val result = new StringBuilder("[");
-        val maxNumberOfDigitsPerColumn = streamTransposed()
+        val maxNumberOfDigitsPerColumn = stream()
                 .map(LongStream::max)
                 .mapToLong(maxValue -> (long) Math.ceil(Math.log10(maxValue.orElse(0))))
                 .toArray();
         maxNumberOfDigitsPerColumn[0]--; // for the first column, we don't need a space
         val rowCount = new AtomicInteger(0);
         val colCount = new AtomicInteger(0);
-        stream().forEachOrdered(row -> {
+        streamTransposed().forEachOrdered(row -> {
             row.forEachOrdered(value -> {
                 result.append("%%%dd".formatted(maxNumberOfDigitsPerColumn[colCount.getAndIncrement()] + 1)
                         .formatted(value));
