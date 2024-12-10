@@ -12,6 +12,7 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import static com.github.caster.shared.StreamUtils.iterateIndicesOf;
+import static com.github.caster.shared.input.InputLoader.parseLongs;
 import static java.util.function.Function.identity;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.IntStream.range;
@@ -35,6 +36,10 @@ public final class Section {
 
     public Matrix matrix() {
         return new Matrix(lines().map(InputLoader::parseLongs)).transposed();
+    }
+
+    public Matrix matrix(final String splitByRegex) {
+        return new Matrix(lines().map(line -> parseLongs(line, splitByRegex))).transposed();
     }
 
     public String string() {

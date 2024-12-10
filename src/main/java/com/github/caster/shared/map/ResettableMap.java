@@ -3,6 +3,7 @@ package com.github.caster.shared.map;
 import com.github.caster.shared.math.Vector;
 import lombok.val;
 
+import java.util.Arrays;
 import java.util.stream.Stream;
 
 import static java.util.function.Function.identity;
@@ -17,7 +18,17 @@ public final class ResettableMap {
 
     }
 
-    public record Cell(char value, int x, int y) {}
+    public record Cell(char value, int x, int y) {
+
+        public Stream<Cell> neighbors(final ResettableMap map) {
+            val position = new Position(x, y);
+            return Arrays.stream(Direction.values())
+                    .map(position::moved)
+                    .filter(map::contains)
+                    .map(p -> new Cell(map.get(p), p.x(), p.y()));
+        }
+
+    }
 
     public final int numRows;
     public final int numColumns;
@@ -34,6 +45,12 @@ public final class ResettableMap {
         this.numColumns = map[0].length;
         this.mapOverlay = new char[numRows][numColumns];
         this.setInVersion = new short[numRows][numColumns];
+    }
+
+    public boolean contains(final Position position) {
+        val x = position.x();
+        val y = position.y();
+        return 0 <= x && x < numColumns && 0 <= y && y < numRows;
     }
 
     public boolean contains(final Vector position) {
