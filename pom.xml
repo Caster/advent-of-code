@@ -48,7 +48,7 @@
                                     <version>[3,)</version>
                                 </requireMavenVersion>
                                 <requireJavaVersion>
-                                    <version>[22,)</version>
+                                    <version>[23,)</version>
                                 </requireJavaVersion>
                             </rules>
                         </configuration>
@@ -68,6 +68,9 @@
                             <version>${lombok.version}</version>
                         </path>
                     </annotationProcessorPaths>
+                    <source>23</source>
+                    <target>23</target>
+                    <compilerArgs>--enable-preview</compilerArgs>
                 </configuration>
             </plugin>
         </plugins>
