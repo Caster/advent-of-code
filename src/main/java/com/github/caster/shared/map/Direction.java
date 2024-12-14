@@ -16,7 +16,11 @@ public enum Direction {
                 || value == DOWN.representation || value == LEFT.representation;
     }
 
-    public Direction turnRight() {
+    public Direction turnCounterclockwise() {
+        return values()[(this.ordinal() + 3) % 4];
+    }
+
+    public Direction turnClockwise() {
         return values()[(this.ordinal() + 1) % 4];
     }
 }

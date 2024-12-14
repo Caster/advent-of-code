@@ -45,7 +45,7 @@ public final class Day6 extends BaseSolution {
             do {
                 map.set(curPos, curDir.representation);
                 while (map.get(curPos.moved(curDir)) == '#') {
-                    curDir = curDir.turnRight();
+                    curDir = curDir.turnClockwise();
                 }
                 curPos = curPos.moved(curDir);
             } while (map.get(curPos) != curDir.representation);
