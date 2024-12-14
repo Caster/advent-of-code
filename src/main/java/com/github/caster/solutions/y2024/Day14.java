@@ -1,13 +1,14 @@
 package com.github.caster.solutions.y2024;
 
 import com.github.caster.shared.BaseSolution;
+import com.github.caster.shared.map.ResettableMap;
 import com.github.caster.shared.math.Vector;
-import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 import lombok.val;
 
 import java.util.Map;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 import static com.github.caster.shared.input.InputLoader.InputType.EXAMPLE;
 import static com.github.caster.shared.input.InputLoader.InputType.INPUT;
@@ -19,8 +20,8 @@ public final class Day14 extends BaseSolution {
 
     private static final Pattern POS_PATTERN = Pattern.compile("(-?\\d+),(-?\\d+)");
 
-    private final long mapWidth;
-    private final long mapHeight;
+    private final int mapWidth;
+    private final int mapHeight;
 
     public Day14() {
         read.from(INPUT);
@@ -33,29 +34,25 @@ public final class Day14 extends BaseSolution {
         }
     }
 
-    @RequiredArgsConstructor
     @ToString
     private final class Robot {
 
-        private final Vector position;
         private final Vector velocity;
+
+        private Vector position;
 
         Robot(final String input) {
             val matcher = POS_PATTERN.matcher(input);
             if (!matcher.find())  throw new IllegalArgumentException("no position found");
-            val position = new Vector(parseLong(matcher.group(1)), parseLong(matcher.group(2)));
+            this.position = new Vector(parseLong(matcher.group(1)), parseLong(matcher.group(2)));
             if (!matcher.find())  throw new IllegalArgumentException("no velocity found");
-            val velocity = new Vector(parseLong(matcher.group(1)), parseLong(matcher.group(2)));
-            this(position, velocity);
+            this.velocity = new Vector(parseLong(matcher.group(1)), parseLong(matcher.group(2)));
         }
 
-        Robot moved(final long numSteps) {
-            return new Robot(
-                    new Vector(
-                            ((position.get(0) + velocity.get(0) * numSteps) % mapWidth + mapWidth) % mapWidth,
-                            ((position.get(1) + velocity.get(1) * numSteps) % mapHeight + mapHeight) % mapHeight
-                    ),
-                    velocity
+        void move(final long numSteps) {
+            position = new Vector(
+                    ((position.get(0) + velocity.get(0) * numSteps) % mapWidth + mapWidth) % mapWidth,
+                    ((position.get(1) + velocity.get(1) * numSteps) % mapHeight + mapHeight) % mapHeight
             );
         }
 
@@ -74,7 +71,7 @@ public final class Day14 extends BaseSolution {
     protected void part1() {
         val safetyFactor = read.lines()
                 .map(Robot::new)
-                .map(robot -> robot.moved(100))
+                .peek(robot -> robot.move(100))
                 .collect(groupingBy(Robot::quadrant, counting()))
                 .entrySet()
                 .stream()
@@ -82,6 +79,34 @@ public final class Day14 extends BaseSolution {
                 .mapToLong(Map.Entry::getValue)
                 .reduce(1, (a, b) -> a * b);
         System.out.println(safetyFactor);
+    }
+
+    @Override
+    protected void part2() {
+        if (read.inputType() != INPUT) {
+            System.out.println("only for full input");
+            return;
+        }
+
+        val robots = read.lines().map(Robot::new).toList();
+
+        val row = ".".repeat(mapWidth).toCharArray();
+        val grid = Stream.generate(() -> row).limit(mapHeight).toArray(char[][]::new);
+        val map = new ResettableMap(grid);
+
+        val treePattern = Pattern.compile("█{21}");
+
+        long numSteps;
+        for (numSteps = 0L; !treePattern.matcher(map.toString()).find(); numSteps++) {
+            map.reset();
+            robots.forEach(robot -> {
+                robot.move(1);
+                map.set(robot.position, '█');
+            });
+        }
+
+        System.out.println(map);
+        System.out.printf("found easter egg in [%d] steps%n", numSteps);
     }
 
 }
