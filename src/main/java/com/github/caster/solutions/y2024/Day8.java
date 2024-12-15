@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 
 import static com.github.caster.shared.input.InputLoader.InputType.INPUT;
+import static com.github.caster.shared.map.ResettableMap.Cell.cellValueIs;
 import static java.util.stream.Collectors.*;
 
 public final class Day8 extends BaseSolution {
@@ -46,7 +47,7 @@ public final class Day8 extends BaseSolution {
             }
         }
 
-        System.out.println(map.stream().filter(cell -> cell.value() == '#').count());
+        System.out.println(map.stream().filter(cellValueIs('#')).count());
     }
 
     @Override
@@ -74,7 +75,7 @@ public final class Day8 extends BaseSolution {
             }
         }
 
-        System.out.println(map.stream().filter(cell -> cell.value() == '#').count());
+        System.out.println(map.stream().filter(cellValueIs('#')).count());
     }
 
 }
