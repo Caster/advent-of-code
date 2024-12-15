@@ -9,6 +9,7 @@ import lombok.val;
 import static com.github.caster.shared.input.InputLoader.InputType.INPUT;
 import static com.github.caster.shared.map.Direction.UP;
 import static com.github.caster.shared.map.Direction.isDirectionRepresentation;
+import static com.github.caster.shared.map.ResettableMap.Cell.cellValueIs;
 import static java.util.stream.Collectors.toSet;
 
 public final class Day6 extends BaseSolution {
@@ -29,7 +30,7 @@ public final class Day6 extends BaseSolution {
     }
 
     private void findCurrentGuardPosition() {
-        val guardCell = map.stream().filter(cell -> cell.value() == '^').findFirst().orElseThrow();
+        val guardCell = map.stream().filter(cellValueIs('^')).findFirst().orElseThrow();
         curPos = new Position(guardCell.x(), guardCell.y());
     }
 

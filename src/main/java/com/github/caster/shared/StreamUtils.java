@@ -3,6 +3,7 @@ package com.github.caster.shared;
 import java.util.List;
 import java.util.stream.IntStream;
 import java.util.stream.LongStream;
+import java.util.stream.Stream;
 
 import static java.util.stream.IntStream.range;
 
@@ -18,6 +19,10 @@ public final class StreamUtils {
 
     public static <T> IntStream iterateIndicesOf(final List<T> list) {
         return range(0, list.size());
+    }
+
+    public static Stream<Character> stream(final char[] array) {
+        return iterateIndicesOf(array).mapToObj(i -> array[i]);
     }
 
     public static LongStream streamWithoutIndex(final long[] array, final int indexToRemove) {

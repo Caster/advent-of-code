@@ -4,6 +4,7 @@ import com.github.caster.shared.math.Vector;
 import lombok.val;
 
 import java.util.Arrays;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import static java.util.function.Function.identity;
@@ -20,12 +21,20 @@ public final class ResettableMap {
 
     public record Cell(char value, int x, int y) {
 
+        public static Predicate<Cell> cellValueIs(final char value) {
+            return cell -> cell.value == value;
+        }
+
         public Stream<Cell> neighbors(final ResettableMap map) {
             val position = new Position(x, y);
             return Arrays.stream(Direction.values())
                     .map(position::moved)
                     .filter(map::contains)
                     .map(p -> new Cell(map.get(p), p.x(), p.y()));
+        }
+
+        public Position position() {
+            return new Position(x, y);
         }
 
         public long corners(final ResettableMap map) {
@@ -100,6 +109,10 @@ public final class ResettableMap {
 
     public char get(final Position position) {
         return get(position.y(), position.x());
+    }
+
+    public Cell getCell(final Position position) {
+        return new Cell(get(position.y(), position.x()), position.x(), position.y());
     }
 
     public void set(final int y, final int x, final char value) {
