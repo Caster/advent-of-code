@@ -2,9 +2,10 @@ package com.github.caster.solutions.y2024;
 
 import com.github.caster.shared.BaseSolution;
 import com.github.caster.shared.map.Position;
+import com.github.caster.shared.memoization.Memoizer;
+import com.github.caster.shared.memoization.ToLongBiFunctionMemoizer;
 import lombok.val;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import static com.github.caster.shared.input.InputLoader.InputType.INPUT;
@@ -101,10 +102,6 @@ public final class Day21 extends BaseSolution {
         return v + h;     // prefer ^> over >^
     }
 
-    record MemoKey(String sequence, int numDirectionalRobots) {}
-
-    private static final Map<MemoKey, Long> DIRECTIONAL_SEQUENCE_CACHE = new HashMap<>();
-
     @Override
     protected void part1() {
         System.out.println(
@@ -116,7 +113,8 @@ public final class Day21 extends BaseSolution {
 
     long determineLineComplexity(final String code, final int numDirectionalRobots) {
         val sequence = findSequenceToType(code, NUMERIC_MOVES);
-        return parseLong(code.substring(0, 3)) * findSequenceLengthToTypeDirectional(sequence, numDirectionalRobots);
+        return parseLong(code.substring(0, 3)) *
+                cachedFindSequenceLengthToTypeDirectional.applyAsLong(sequence, numDirectionalRobots);
     }
 
     String findSequenceToType(final String code, final Map<ButtonChange, String> keyPadMoves) {
@@ -130,17 +128,15 @@ public final class Day21 extends BaseSolution {
         return sequence.toString();
     }
 
+    private final ToLongBiFunctionMemoizer<String, Integer> cachedFindSequenceLengthToTypeDirectional =
+            Memoizer.cache(this::findSequenceLengthToTypeDirectional);
     long findSequenceLengthToTypeDirectional(final String sequence, final int numDirectionalRobots) {
         if (numDirectionalRobots == 0)  return sequence.length();
-        val memoKey = new MemoKey(sequence, numDirectionalRobots);
-        val cachedSequenceLength = DIRECTIONAL_SEQUENCE_CACHE.get(memoKey);
-        if (cachedSequenceLength != null)  return cachedSequenceLength;
-        val sequenceLength = stream(sequence.split("(?<=A)"))
+        return stream(sequence.split("(?<=A)"))
                 .map(move -> findSequenceToType(move, DIRECTIONAL_MOVES))
-                .mapToLong(moveSequence -> findSequenceLengthToTypeDirectional(moveSequence, numDirectionalRobots - 1))
+                .mapToLong(moveSequence -> cachedFindSequenceLengthToTypeDirectional.applyAsLong(
+                        moveSequence, numDirectionalRobots - 1))
                 .sum();
-        DIRECTIONAL_SEQUENCE_CACHE.put(memoKey, sequenceLength);
-        return sequenceLength;
     }
 
     @Override
