@@ -1,11 +1,11 @@
 package com.github.caster.solutions.y2024;
 
 import com.github.caster.shared.BaseSolution;
+import com.github.caster.shared.memoization.Memoizer;
+import com.github.caster.shared.memoization.ToLongBiFunctionMemoizer;
 import lombok.val;
 
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.function.LongConsumer;
 import java.util.stream.LongStream;
 
@@ -17,9 +17,6 @@ import static java.util.Arrays.stream;
 public final class Day11 extends BaseSolution {
 
     private final long[] stones;
-    private final Map<MemoKey, Long> cache = new HashMap<>();
-
-    record MemoKey(long stone, long blinksToGo) {};
 
     public Day11() {
         read.from(INPUT);
@@ -31,24 +28,17 @@ public final class Day11 extends BaseSolution {
         System.out.println(stream(stones).map(stone -> determineNumStonesAfterBlinks(stone, 25)).sum());
     }
 
+    private final ToLongBiFunctionMemoizer<Long, Integer> cachedDetermineNumStonesAfterBlinks =
+            Memoizer.cache(this::determineNumStonesAfterBlinks);
     private long determineNumStonesAfterBlinks(final long stone, final int blinksToGo) {
-        val key = new MemoKey(stone, blinksToGo);
-        val cacheResult = cache.get(key);
-        if (cacheResult != null) {
-            return cacheResult;
-        }
-
         val blinkResult = LongStream.of(stone).mapMulti(this::blinkSingleStone).toArray();
         if (blinksToGo == 1) {
-            cache.put(key, (long) blinkResult.length);
             return blinkResult.length;
         }
 
-        val numStones = Arrays.stream(blinkResult)
-                .map(resultStone -> determineNumStonesAfterBlinks(resultStone, blinksToGo - 1))
+        return Arrays.stream(blinkResult)
+                .map(resultStone -> cachedDetermineNumStonesAfterBlinks.applyAsLong(resultStone, blinksToGo - 1))
                 .sum();
-        cache.put(key, numStones);
-        return numStones;
     }
 
     private void blinkSingleStone(final long stone, final LongConsumer downstream) {
