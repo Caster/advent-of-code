@@ -6,8 +6,8 @@ import lombok.val;
 import java.util.Map;
 import java.util.Set;
 
-import static com.github.caster.shared.StreamUtils.iterateIndicesOf;
 import static com.github.caster.shared.input.InputLoader.InputType.INPUT;
+import static com.github.caster.shared.stream.StreamUtils.iterateIndicesOf;
 import static java.util.Arrays.stream;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toMap;

@@ -11,8 +11,8 @@ import java.util.function.Consumer;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import static com.github.caster.shared.StreamUtils.iterateIndicesOf;
 import static com.github.caster.shared.input.InputLoader.parseLongs;
+import static com.github.caster.shared.stream.StreamUtils.iterateIndicesOf;
 import static java.util.function.Function.identity;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.IntStream.range;

@@ -9,11 +9,11 @@ import lombok.val;
 import java.util.List;
 import java.util.stream.Stream;
 
-import static com.github.caster.shared.StreamUtils.stream;
 import static com.github.caster.shared.input.InputLoader.InputType.INPUT;
 import static com.github.caster.shared.map.Direction.LEFT;
 import static com.github.caster.shared.map.Direction.RIGHT;
 import static com.github.caster.shared.map.ResettableMap.Cell.cellValueIs;
+import static com.github.caster.shared.stream.StreamUtils.stream;
 
 public final class Day15 extends BaseSolution {
 
