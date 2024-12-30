@@ -7,8 +7,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static com.github.caster.shared.StreamUtils.iterateIndicesOf;
 import static com.github.caster.shared.input.InputLoader.InputType.INPUT;
+import static com.github.caster.shared.stream.StreamUtils.iterateIndicesOf;
 import static java.util.stream.IntStream.range;
 
 public final class Day9 extends BaseSolution {

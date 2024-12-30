@@ -6,9 +6,9 @@ import lombok.val;
 
 import java.util.Arrays;
 
-import static com.github.caster.shared.StreamUtils.iterateIndicesOf;
-import static com.github.caster.shared.StreamUtils.streamWithoutIndex;
 import static com.github.caster.shared.input.InputLoader.InputType.INPUT;
+import static com.github.caster.shared.stream.StreamUtils.iterateIndicesOf;
+import static com.github.caster.shared.stream.StreamUtils.streamWithoutIndex;
 import static java.util.Arrays.stream;
 
 public final class Day2 extends BaseSolution {

@@ -1,4 +1,6 @@
-package com.github.caster.shared;
+package com.github.caster.shared.stream;
+
+import lombok.experimental.UtilityClass;
 
 import java.util.List;
 import java.util.stream.IntStream;
@@ -7,6 +9,7 @@ import java.util.stream.Stream;
 
 import static java.util.stream.IntStream.range;
 
+@UtilityClass
 public final class StreamUtils {
 
     public static IntStream iterateIndicesOf(final char[] array) {

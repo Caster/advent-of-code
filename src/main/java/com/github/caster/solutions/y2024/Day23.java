@@ -7,6 +7,8 @@ import java.util.*;
 import java.util.function.Consumer;
 
 import static com.github.caster.shared.input.InputLoader.InputType.INPUT;
+import static com.github.caster.shared.stream.TripleStream.streamTriples;
+import static com.github.caster.shared.stream.TripleStream.unpackedTriple;
 import static java.util.Comparator.comparing;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toSet;
@@ -29,26 +31,17 @@ public final class Day23 extends BaseSolution {
 
     @Override
     protected void part1() {
-        val cliques = new ArrayList<String>();
         val nodes = nodeNeighbors.keySet().stream().sorted().toList();
-        val numNodes = nodes.size();
-        for (int i = 0; i < numNodes - 2; i++) {
-            val node1 = nodes.get(i);
-
-            for (int j = i + 1; j < numNodes - 1; j++) {
-                val node2 = nodes.get(j);
-                if (!nodeNeighbors.get(node1).contains(node2))  continue;
-
-                for (int k = j + 1; k < numNodes; k++) {
-                    val node3 = nodes.get(k);
-                    if (node1.charAt(0) != 't' && node2.charAt(0) != 't' && node3.charAt(0) != 't')  continue;
-                    if (!nodeNeighbors.get(node1).contains(node3))  continue;
-                    if (!nodeNeighbors.get(node2).contains(node3))  continue;
-                    cliques.add("%s,%s,%s".formatted(node1, node2, node3));
-                }
-            }
-        }
-        System.out.println(cliques.size());
+        System.out.println(
+                streamTriples(nodes)
+                        .filter(unpackedTriple((node1, node2, node3) ->
+                                (node1.charAt(0) == 't' || node2.charAt(0) == 't' || node3.charAt(0) == 't')
+                                && nodeNeighbors.get(node1).contains(node2)
+                                && nodeNeighbors.get(node1).contains(node3)
+                                && nodeNeighbors.get(node2).contains(node3)
+                        ))
+                        .count()
+        );
     }
 
     @Override
