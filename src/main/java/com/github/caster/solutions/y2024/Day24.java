@@ -11,13 +11,15 @@ import java.util.Map;
 import java.util.function.BiPredicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 import static com.github.caster.shared.input.InputLoader.InputType.INPUT;
 import static java.lang.Integer.max;
 import static java.lang.Integer.parseInt;
-import static java.lang.Long.toBinaryString;
+import static java.lang.Math.abs;
 import static java.lang.Math.min;
-import static java.util.stream.Collectors.*;
+import static java.util.Comparator.comparing;
+import static java.util.stream.Collectors.joining;
 
 public final class Day24 extends BaseSolution {
 
@@ -114,18 +116,6 @@ public final class Day24 extends BaseSolution {
 
     @Override
     protected void part2() {
-        // perform the swaps we believe are necessary
-        swapDependencies("z11", "vkq");
-        swapDependencies("z24", "mmk");
-        swapDependencies("qdq", "pvb");
-        swapDependencies("z38", "hqh");
-
-        val x = getRegisterValue("x");
-        val y = getRegisterValue("y");
-        val z = getRegisterValue("z");
-        System.out.printf("x = %46s (%d)%ny = %46s (%d) +%nz = %s (%d)%n",
-                toBinaryString(x), x, toBinaryString(y), y, toBinaryString(z), z);
-
         // find sum and carry wires
         wires.values().stream()
                 .filter(this::dependsOnTwoInputs)
@@ -157,23 +147,12 @@ public final class Day24 extends BaseSolution {
             categorize(wireZX);
         }
 
-        val categoryCounts = wires.values().stream().collect(groupingBy(Wire::getCategory, counting()));
-        System.out.printf("%nThere are %d wires:%n", wires.size());
-        categoryCounts.entrySet().stream().filter(entry -> entry.getKey() != WireCategory.UNCATEGORIZED)
-                .forEach(entry -> System.out.printf("  %d %s wires;%n", entry.getValue(),
-                        entry.getKey().name().toLowerCase().replaceAll("_", "-")));
-        System.out.printf("  %d uncategorized wires.%n", categoryCounts.get(WireCategory.UNCATEGORIZED));
-
-        //System.out.println("sum wire 28 = " + wires.values().stream()
-        //        .filter(wire -> wire.category == WireCategory.SUM && wire.ioIndexNumber == 28)
-        //        .findFirst().orElseThrow().name);
-
         System.out.println();
         for (int i = 0; i < 45; i++) {
             val wireZX = wires.get("z%02d".formatted(i));
             if (wireZX.category != WireCategory.ADDER) {
                 printWireWithDependencies(wireZX, 0);
-                break;
+                return;
             }
         }
         if (wires.get("z45").category != WireCategory.CARRY_NOW_OR_CARRIED_OVER) {
@@ -182,17 +161,6 @@ public final class Day24 extends BaseSolution {
         }
 
         System.out.println("All good! Swaps: " + swaps.stream().sorted().collect(joining(",")));
-    }
-
-    void swapDependencies(final String wire1Name, final String wire2Name) {
-        val wire1 = wires.get(wire1Name);
-        val wire2 = wires.get(wire2Name);
-        val dependency1 = wire1.dependency;
-        wire1.dependency = wire2.dependency;
-        wire2.dependency = dependency1;
-
-        swaps.add(wire1Name);
-        swaps.add(wire2Name);
     }
 
     boolean dependsOnTwoInputs(final Wire wire) {
@@ -215,6 +183,7 @@ public final class Day24 extends BaseSolution {
         if (isCarryNowOrCarriedOver(wire)) {
             wire.category = WireCategory.CARRY_NOW_OR_CARRIED_OVER;
             wire.ioIndexNumber = max(wire.dependency.wire1.ioIndexNumber, wire.dependency.wire2.ioIndexNumber);
+            return;
         }
         if (isAdder(wire)) {
             wire.category = WireCategory.ADDER;
@@ -244,14 +213,63 @@ public final class Day24 extends BaseSolution {
     }
 
     boolean isAdder(final Wire wire) {
-        val couldBeAdder = wire.dependency.operation == Operation.XOR
-                && hasDependencyWith1IndexNumberDifferenceAndCategories(wire, WireCategory.CARRY_NOW_OR_CARRIED_OVER, WireCategory.SUM);
-        val isOutputWire = wire.ioIndexNumber > 0;
-        if (couldBeAdder && !isOutputWire) {
-            System.out.printf("WARN: wire [%s] could have been an adder for output bit [%d]%n", wire.name,
-                    max(wire.dependency.wire1.ioIndexNumber, wire.dependency.wire2.ioIndexNumber));
+        if (wire.dependency.operation != Operation.XOR
+                || abs(wire.dependency.wire1.ioIndexNumber - wire.dependency.wire2.ioIndexNumber) != 1) {
+            return false;
         }
-        return couldBeAdder && isOutputWire;
+
+        // if we found an adder for a wire that is not an output wire, try to swap with the expected output wire
+        if (wire.ioIndexNumber == 0) {
+            val shouldBeAdderForOutputBit = max(wire.dependency.wire1.ioIndexNumber, wire.dependency.wire2.ioIndexNumber);
+            val shouldBeWire = wires.get("z%02d".formatted(shouldBeAdderForOutputBit));
+            wire.category = WireCategory.ADDER;
+            swapDependencies(wire, shouldBeWire);
+            return false;
+        }
+
+        // if the categories are not what we expect, try to swap with the correct wire (if found)
+        val loDep = Stream.of(wire.dependency.wire1, wire.dependency.wire2).min(comparing(w -> w.ioIndexNumber)).orElseThrow();
+        val hiDep = loDep == wire.dependency.wire1 ? wire.dependency.wire2 : wire.dependency.wire1;
+        if (loDep.category != WireCategory.CARRY_NOW_OR_CARRIED_OVER) {
+            val expectedWire = wires.values().stream()
+                    .filter(w -> w.category == WireCategory.CARRY_NOW_OR_CARRIED_OVER
+                                    && w.ioIndexNumber == wire.ioIndexNumber - 1)
+                    .findFirst();
+            if (expectedWire.isEmpty()) {
+                throw new RuntimeException("need to find carr-now-or-carried-over wire %d, but cannot find it"
+                        .formatted(wire.ioIndexNumber - 1));
+            }
+            swapDependencies(loDep, expectedWire.get());
+            return true;
+        }
+        if (hiDep.category != WireCategory.SUM) {
+            val expectedWire = wires.values().stream()
+                    .filter(w -> w.category == WireCategory.SUM && w.ioIndexNumber == wire.ioIndexNumber)
+                    .findFirst();
+            if (expectedWire.isEmpty()) {
+                throw new RuntimeException("need to find sum wire %d, but cannot find it".formatted(wire.ioIndexNumber));
+            }
+            swapDependencies(hiDep, expectedWire.get());
+            return true;
+        }
+
+        return true;
+    }
+
+    void swapDependencies(final Wire wire1, final Wire wire2) {
+        val dependency1 = wire1.dependency;
+        val category1 = wire1.category;
+        val ioIndexNumber1 = wire1.ioIndexNumber;
+        wire1.dependency = wire2.dependency;
+        wire1.category = wire2.category;
+        wire1.ioIndexNumber = wire2.ioIndexNumber;
+        wire2.dependency = dependency1;
+        wire2.category = category1;
+        wire2.ioIndexNumber = ioIndexNumber1;
+
+        swaps.add(wire1.name);
+        swaps.add(wire2.name);
+        System.out.printf("swapped [%s] and [%s]%n", wire1.name, wire2.name);
     }
 
     void printWireWithDependencies(final Wire wire, final int depth) {
