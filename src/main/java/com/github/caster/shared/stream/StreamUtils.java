@@ -24,6 +24,10 @@ public final class StreamUtils {
         return range(0, list.size());
     }
 
+    public static <T> IntStream iterateIndicesOf(final T[] array) {
+        return range(0, array.length);
+    }
+
     public static Stream<Character> stream(final char[] array) {
         return iterateIndicesOf(array).mapToObj(i -> array[i]);
     }
