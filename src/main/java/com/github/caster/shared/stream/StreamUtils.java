@@ -2,11 +2,15 @@ package com.github.caster.shared.stream;
 
 import lombok.experimental.UtilityClass;
 
+import java.util.Iterator;
 import java.util.List;
+import java.util.Spliterator;
 import java.util.stream.IntStream;
 import java.util.stream.LongStream;
 import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
+import static java.util.Spliterators.spliteratorUnknownSize;
 import static java.util.stream.IntStream.range;
 
 @UtilityClass
@@ -30,6 +34,10 @@ public final class StreamUtils {
 
     public static Stream<Character> stream(final char[] array) {
         return iterateIndicesOf(array).mapToObj(i -> array[i]);
+    }
+
+    public static <T> Stream<T> stream(final Iterator<T> iterator) {
+        return StreamSupport.stream(spliteratorUnknownSize(iterator, Spliterator.ORDERED), false);
     }
 
     public static LongStream streamWithoutIndex(final long[] array, final int indexToRemove) {
