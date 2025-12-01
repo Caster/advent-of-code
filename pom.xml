@@ -9,16 +9,17 @@
     <version>1.0.0-SNAPSHOT</version>
 
     <properties>
-        <maven.compiler.source>23</maven.compiler.source>
-        <maven.compiler.target>23</maven.compiler.target>
+        <maven.compiler.source>25</maven.compiler.source>
+        <maven.compiler.target>25</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
         <!-- Libraries -->
-        <lombok.version>1.18.36</lombok.version>
+        <lombok.version>1.18.42</lombok.version>
 
         <!-- Maven plugins -->
-        <maven.enforcer.plugin.version>3.5.0</maven.enforcer.plugin.version>
-        <maven.compiler.plugin.version>3.13.0</maven.compiler.plugin.version>
+        <maven.enforcer.plugin.version>3.6.2</maven.enforcer.plugin.version>
+        <maven.compiler.plugin.version>3.14.1</maven.compiler.plugin.version>
+        <maven.versions.plugin.version>2.20.1</maven.versions.plugin.version>
     </properties>
 
     <dependencies>
@@ -48,7 +49,7 @@
                                     <version>[3,)</version>
                                 </requireMavenVersion>
                                 <requireJavaVersion>
-                                    <version>[23,)</version>
+                                    <version>[25,)</version>
                                 </requireJavaVersion>
                             </rules>
                         </configuration>
@@ -68,9 +69,19 @@
                             <version>${lombok.version}</version>
                         </path>
                     </annotationProcessorPaths>
-                    <source>23</source>
-                    <target>23</target>
+                    <source>25</source>
+                    <target>25</target>
                     <compilerArgs>--enable-preview</compilerArgs>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>versions-maven-plugin</artifactId>
+                <version>${maven.versions.plugin.version}</version>
+                <configuration>
+                    <allowDowngrade>true</allowDowngrade>
+                    <ignoredVersions>(?i).*-(alpha|beta|m|rc)([-.]?\d+)?</ignoredVersions>
                 </configuration>
             </plugin>
         </plugins>
