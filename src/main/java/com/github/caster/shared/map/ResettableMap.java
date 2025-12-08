@@ -1,11 +1,12 @@
 package com.github.caster.shared.map;
 
-import com.github.caster.shared.math.Vector;
-import lombok.val;
-
 import java.util.Arrays;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
+
+import com.github.caster.shared.math.Vector;
+
+import lombok.val;
 
 import static java.util.function.Function.identity;
 import static java.util.stream.IntStream.range;
@@ -31,6 +32,13 @@ public final class ResettableMap {
                     .map(position::moved)
                     .filter(map::contains)
                     .map(p -> new Cell(map.get(p), p.x(), p.y()));
+        }
+
+        public Stream<Cell> octoNeighbors(final ResettableMap map) {
+            return range(0, 9).mapToObj(i -> new Position(
+                    x - 1 + i % 3,
+                    y - 1 + i / 3
+            )).filter(map::contains).map(p -> new Cell(map.get(p), p.x(), p.y()));
         }
 
         public Position position() {
