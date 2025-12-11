@@ -1,8 +1,5 @@
 package com.github.caster.shared.input;
 
-import lombok.experimental.Delegate;
-import lombok.val;
-
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -11,6 +8,9 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import lombok.experimental.Delegate;
+import lombok.val;
 
 import static java.util.Arrays.stream;
 
@@ -84,7 +84,7 @@ public final class InputLoader {
     }
 
     public static String[] parseColumns(final String input, final String splitByRegex) {
-        return input.split(splitByRegex);
+        return input.strip().split(splitByRegex);
     }
 
 }

@@ -1,11 +1,11 @@
 package com.github.caster.shared.math;
 
-import lombok.val;
-
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.LongStream;
 import java.util.stream.Stream;
+
+import lombok.val;
 
 import static java.util.stream.IntStream.range;
 
@@ -19,6 +19,14 @@ public final class Matrix {
 
     public Vector column(final int index) {
         return new Vector(columns[index]);
+    }
+
+    public int columns() {
+        return columns.length;
+    }
+
+    public int rows() {
+        return columns[0].length;
     }
 
     public void sortColumns() {
@@ -49,11 +57,10 @@ public final class Matrix {
         val rowCount = new AtomicInteger(0);
         val colCount = new AtomicInteger(0);
         streamTransposed().forEachOrdered(row -> {
-            row.forEachOrdered(value -> {
+            row.forEachOrdered(value ->
                 result.append("%%%dd".formatted(maxNumberOfDigitsPerColumn[colCount.getAndIncrement()] + 1)
-                        .formatted(value));
-            });
-            if (rowCount.incrementAndGet() < columns[0].length) {
+                        .formatted(value)));
+            if (rowCount.incrementAndGet() < rows()) {
                 result.append("\n ");
             }
             colCount.set(0);
