@@ -1,11 +1,17 @@
 package com.github.caster.shared.math;
 
-import lombok.EqualsAndHashCode;
-
 import java.util.Arrays;
 import java.util.stream.LongStream;
 
+import com.github.caster.shared.stream.ZippingGatherer.Pair;
+
+import lombok.EqualsAndHashCode;
+import lombok.val;
+
 import static com.github.caster.shared.stream.StreamUtils.iterateIndicesOf;
+import static com.github.caster.shared.stream.ZippingGatherer.zipWith;
+import static java.lang.Math.multiplyExact;
+import static java.lang.Math.subtractExact;
 
 @EqualsAndHashCode
 public final class Vector {
@@ -20,13 +26,28 @@ public final class Vector {
         return stream().map(Math::abs).reduce(Long::sum).orElse(0L);
     }
 
+    public long squaredEuclideanDistanceTo(final Vector that) {
+        if (this.components.length != that.components.length) {
+            throw new IllegalArgumentException("Incompatible number of components");
+        }
+
+        return stream().boxed().gather(zipWith(that.stream().boxed()))
+                .mapToLong(this::squaredDifference)
+                .sum();
+    }
+
+    private long squaredDifference(final Pair<Long, Long> components) {
+        val diff = subtractExact(components.t1(), components.t2());
+        return multiplyExact(diff, diff);
+    }
+
     public long get(final int index) {
         return components[index];
     }
 
     public Vector minus(final Vector that) {
         if (this.components.length != that.components.length) {
-            throw new RuntimeException("Incompatible number of components");
+            throw new IllegalArgumentException("Incompatible number of components");
         }
 
         return new Vector(
@@ -38,7 +59,7 @@ public final class Vector {
 
     public Vector plus(final Vector that) {
         if (this.components.length != that.components.length) {
-            throw new RuntimeException("Incompatible number of components");
+            throw new IllegalArgumentException("Incompatible number of components");
         }
 
         return new Vector(
