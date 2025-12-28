@@ -1,10 +1,11 @@
 package com.github.caster.shared;
 
 import java.time.Duration;
-import java.time.Instant;
+import java.util.concurrent.atomic.AtomicReference;
 
 import com.github.caster.shared.input.InputLoader;
 
+import lombok.SneakyThrows;
 import lombok.val;
 
 import static java.time.Instant.now;
@@ -19,20 +20,37 @@ public abstract class BaseSolution {
         IO.println("TO DO");
     }
 
-    static void main() throws Exception {
-        val solution = (BaseSolution) Class.forName(System.getProperty("sun.java.command"))
-                .getConstructor().newInstance();
-        System.out.printf("--- PART 1 [%s] ---%n", solution.read.inputType());
-        final Instant start1 = now();
-        solution.part1();
-        final Instant stop1 = now();
-        System.out.printf("--- Done in about %d ms%n", Duration.between(start1, stop1).toMillis());
+    static void main() {
+        val solutionReference = new AtomicReference<BaseSolution>();
+        val setupTime = time(() -> load(solutionReference));
+        val solution = solutionReference.get();
+        IO.println("Setup for solving [%s] done in about %d ms"
+                .formatted(solution.read.inputType(), setupTime));
 
-        System.out.printf("\n--- PART 2 [%s] ---%n", solution.read.inputType());
-        final Instant start2 = now();
-        solution.part2();
-        final Instant stop2 = now();
-        System.out.printf("--- Done in about %d ms%n", Duration.between(start2, stop2).toMillis());
+        runAndTimePart(1, solution::part1);
+        runAndTimePart(2, solution::part2);
+    }
+
+    private static long time(final Runnable runnable) {
+        val start = now();
+        runnable.run();
+        val stop = now();
+        return Duration.between(start, stop).toMillis();
+    }
+
+    @SneakyThrows
+    private static void load(final AtomicReference<BaseSolution> solutionReference) {
+        solutionReference.set(
+                (BaseSolution) Class.forName(System.getProperty("sun.java.command"))
+                        .getConstructor().newInstance()
+        );
+    }
+
+    private static void runAndTimePart(final int part, final Runnable runnable) {
+        IO.println();
+        IO.println("--- PART %d ---".formatted(part));
+        final long solveDurationInMs = time(runnable);
+        IO.println("--- Done in about %d ms".formatted(solveDurationInMs));
     }
 
 }
