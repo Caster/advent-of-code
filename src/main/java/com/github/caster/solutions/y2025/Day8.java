@@ -6,7 +6,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
 
-import com.github.caster.shared.BaseSolution;
+import com.github.caster.shared.BaseSolution2;
 import com.github.caster.shared.math.Vector;
 
 import lombok.val;
@@ -18,7 +18,7 @@ import static java.util.Comparator.reverseOrder;
 import static java.util.stream.Collectors.toCollection;
 import static java.util.stream.IntStream.range;
 
-public final class Day8 extends BaseSolution {
+public final class Day8 extends BaseSolution2 {
 
     private final List<Vector> junctionBoxPositions;
     private final List<JunctionBoxesDistance> sqDistances;
@@ -29,7 +29,6 @@ public final class Day8 extends BaseSolution {
     private int numCircuits;
 
     public Day8() {
-        read.from(INPUT);
         junctionBoxPositions = read.lines()
                 .map(line -> new Vector(parseLongs(line, ",")))
                 .toList();
@@ -63,18 +62,16 @@ public final class Day8 extends BaseSolution {
     }
 
     @Override
-    protected void part1() {
+    protected long part1() {
         range(0, read.inputType() == INPUT ? 1_000 : 10)
                 .forEach(_ -> this.connectClosestJunctionBoxes());
 
-        IO.println(
-                circuits.stream().filter(Objects::nonNull)
-                        .map(Set::size)
-                        .sorted(reverseOrder())
-                        .limit(3)
-                        .mapToLong(Long::valueOf)
-                        .reduce(1, Math::multiplyExact)
-        );
+        return circuits.stream().filter(Objects::nonNull)
+                .map(Set::size)
+                .sorted(reverseOrder())
+                .limit(3)
+                .mapToLong(Long::valueOf)
+                .reduce(1, Math::multiplyExact);
     }
 
     private void connectClosestJunctionBoxes() {
@@ -94,15 +91,15 @@ public final class Day8 extends BaseSolution {
     }
 
     @Override
-    protected void part2() {
+    protected long part2() {
         while (numCircuits > 1) {
             connectClosestJunctionBoxes();
         }
 
         val lastConnection = sqDistances.get(sqDistanceIndex - 1);
-        IO.println(multiplyExact(
+        return multiplyExact(
                 junctionBoxPositions.get(lastConnection.indexI).get(0),
                 junctionBoxPositions.get(lastConnection.indexJ).get(0)
-        ));
+        );
     }
 }

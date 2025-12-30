@@ -6,7 +6,8 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
-import java.util.regex.Matcher;
+import java.util.Optional;
+import java.util.function.UnaryOperator;
 import java.util.regex.Pattern;
 
 import lombok.experimental.Delegate;
@@ -16,44 +17,55 @@ import static java.util.Arrays.stream;
 
 public final class InputLoader {
 
-    @SuppressWarnings("unused")
+    public static Optional<String> getSolutionClassName() {
+        return stream(Thread.currentThread().getStackTrace())
+                .filter(el -> el.getClassName().startsWith("com.github.caster.solutions"))
+                .findFirst()
+                .map(StackTraceElement::getClassName);
+    }
+
+    public static UnaryOperator<String> formatYearDay(final String format) {
+        return fqcn -> {
+            val yearMatcher = YEAR_PART.matcher(fqcn);
+            if (!yearMatcher.find()) {
+                throw new IllegalStateException(
+                        "Could not find year part in FQCN [%s]".formatted(fqcn)
+                );
+            }
+            val yearPart = yearMatcher.group(1);
+            val dayPart = fqcn.substring(fqcn.lastIndexOf('.') + 1).toLowerCase();
+            return format.formatted(yearPart, dayPart);
+        };
+    }
+
     public enum InputType {
         EXAMPLE,
         EXAMPLE2,
         INPUT
     }
 
-    private static final Pattern YEAR_PART = Pattern.compile("y(\\d{4})");
+    private static final Pattern YEAR_PART = Pattern.compile("\\.y(\\d{4})\\.");
 
     private InputType inputType;
 
     @Delegate
     private Section section;
 
-    public void from(final InputType inputToLoad) {
-        final String directory = stream(Thread.currentThread().getStackTrace())
-                .filter(el -> el.getClassName().startsWith("com.github.caster.solutions"))
-                .findFirst()
-                .map(StackTraceElement::getClassName)
-                .map(fqcn -> {
-                    val yearPart = stream(fqcn.split("\\."))
-                            .map(YEAR_PART::matcher)
-                            .filter(Matcher::matches)
-                            .map(matcher -> matcher.group(1))
-                            .findFirst()
-                            .orElseThrow(() ->
-                                    new IllegalStateException("Could not find year part in FQCN [%s]".formatted(fqcn)));
-                    val dayPart = fqcn.substring(fqcn.lastIndexOf('.') + 1).toLowerCase();
-                    return yearPart + "/" + dayPart;
-                })
-                .orElseThrow();
-        final String resourceBaseName = inputToLoad.name().toLowerCase();
+    public boolean exists(final InputType inputToCheck) {
+        return determineUrl(inputToCheck) != null;
+    }
 
-        final URL resourceUrl = InputLoader.class.getResource(
-                "/%s/%s.txt".formatted(directory, resourceBaseName)
-        );
+    private URL determineUrl(final InputType inputType) {
+        val directory = getSolutionClassName().map(formatYearDay("%s/%s")).orElseThrow();
+        val resourceBaseName = inputType.name().toLowerCase();
+        return InputLoader.class.getResource("/%s/%s.txt".formatted(directory, resourceBaseName));
+    }
+
+    public void from(final InputType inputToLoad) {
+        val resourceUrl = determineUrl(inputToLoad);
         if (resourceUrl == null) {
-            throw new RuntimeException("Unknown resource [%s]".formatted(resourceBaseName));
+            throw new RuntimeException("Unknown resource [%s]"
+                    .formatted(inputToLoad.name().toLowerCase()));
         }
         try (val inputLinesStream = Files.lines(Path.of(resourceUrl.toURI()))) {
             inputType = inputToLoad;
