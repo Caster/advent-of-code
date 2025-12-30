@@ -7,10 +7,13 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import com.github.caster.shared.BaseSolution2;
+import com.github.caster.shared.Expectations;
 import com.github.caster.shared.math.Vector;
 
 import lombok.val;
 
+import static com.github.caster.shared.Expectations.expect;
+import static com.github.caster.shared.input.InputLoader.InputType.EXAMPLE;
 import static com.github.caster.shared.input.InputLoader.InputType.INPUT;
 import static com.github.caster.shared.input.InputLoader.parseLongs;
 import static java.lang.Math.multiplyExact;
@@ -19,6 +22,11 @@ import static java.util.stream.Collectors.toCollection;
 import static java.util.stream.IntStream.range;
 
 public final class Day8 extends BaseSolution2 {
+
+    public static Expectations expectations() {
+        return expect(EXAMPLE).toSolveTo(40).andPart(2).toSolveTo(25272)
+                .alsoExpect(INPUT).toSolveTo(129564).andPart(2).toSolveTo(42047840);
+    }
 
     private final List<Vector> junctionBoxPositions;
     private final List<JunctionBoxesDistance> sqDistances;
