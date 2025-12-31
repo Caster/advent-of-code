@@ -9,7 +9,10 @@ import java.util.stream.LongStream;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import com.github.caster.shared.stream.ZippingGatherer.Pair;
+
 import lombok.experimental.UtilityClass;
+import lombok.val;
 
 import static java.util.Spliterators.spliteratorUnknownSize;
 import static java.util.stream.IntStream.range;
@@ -43,6 +46,12 @@ public final class StreamUtils {
 
     public static <T> Stream<T> streamReversed(final T[] array) {
         return Arrays.asList(array).reversed().stream();
+    }
+
+    public static <T> Stream<Pair<T, T>> streamUniquePairs(final T[] array) {
+        val l = array.length;
+        return range(0, l).boxed().mapMulti((i, downstream) ->
+                range(i + 1, l).forEach(j -> downstream.accept(new Pair<>(array[i], array[j]))));
     }
 
     public static LongStream streamWithoutIndex(final long[] array, final int indexToRemove) {

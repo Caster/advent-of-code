@@ -22,6 +22,10 @@ public final class Vector {
         this.components = components;
     }
 
+    public Vector abs() {
+        return new Vector(stream().map(Math::abs).toArray());
+    }
+
     public long absoluteSum() {
         return stream().map(Math::abs).reduce(Long::sum).orElse(0L);
     }
