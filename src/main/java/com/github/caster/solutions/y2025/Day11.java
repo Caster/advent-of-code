@@ -1,8 +1,6 @@
 package com.github.caster.solutions.y2025;
 
 import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
 
 import org.jgrapht.Graph;
 import org.jgrapht.GraphPath;
@@ -14,15 +12,15 @@ import org.jgrapht.graph.SimpleDirectedGraph;
 import com.github.caster.shared.BaseSolution2;
 import com.github.caster.shared.Expectations;
 
+import lombok.EqualsAndHashCode;
+import lombok.RequiredArgsConstructor;
 import lombok.val;
 
 import static com.github.caster.shared.Expectations.expect;
 import static com.github.caster.shared.input.InputLoader.InputType.EXAMPLE;
 import static com.github.caster.shared.input.InputLoader.InputType.EXAMPLE2;
 import static com.github.caster.shared.input.InputLoader.InputType.INPUT;
-import static com.github.caster.shared.input.InputLoader.parseColumns;
 import static java.util.Arrays.stream;
-import static java.util.stream.Collectors.toSet;
 
 public final class Day11 extends BaseSolution2 {
 
@@ -32,31 +30,53 @@ public final class Day11 extends BaseSolution2 {
                 .alsoExpect(INPUT).toSolveTo(543).andPart(2).toSolveTo(479511112939968L);
     }
 
-    private final Graph<String, ReadableEdge> serverRack;
-    private final Graph<String, ReadableEdge> serverRackReversed;
+    private final Graph<IgnorableVertex, ReadableEdge> serverRack;
+    private final Graph<IgnorableVertex, ReadableEdge> serverRackReversed;
 
     private static final class ReadableEdge extends DefaultEdge {
 
         @Override
-        public String getSource() {
-            return super.getSource().toString();
+        public IgnorableVertex getSource() {
+            return (IgnorableVertex) super.getSource();
         }
 
         @Override
-        public String getTarget() {
-            return super.getTarget().toString();
+        public IgnorableVertex getTarget() {
+            return (IgnorableVertex) super.getTarget();
+        }
+
+    }
+
+    @EqualsAndHashCode
+    @RequiredArgsConstructor
+    private static final class IgnorableVertex {
+
+        private final String value;
+
+        @EqualsAndHashCode.Exclude
+        private boolean ignore = false;
+
+        void ignore() {
+            ignore = true;
+        }
+
+        boolean isIgnored() {
+            return ignore;
         }
 
     }
 
     public Day11() {
         serverRack = new SimpleDirectedGraph<>(ReadableEdge.class);
-        serverRack.addVertex("out");
-        read.lines().map(line -> line.split(":")[0]).forEach(serverRack::addVertex);
+        serverRack.addVertex(new IgnorableVertex("out"));
+        read.lines().map(line -> line.split(":")[0])
+                .map(IgnorableVertex::new)
+                .forEach(serverRack::addVertex);
         read.lines().forEach(line -> {
-            val source = line.split(":")[0];
-            val targets = parseColumns(line.split(": ")[1]);
-            stream(targets).forEach(target -> serverRack.addEdge(source, target));
+            val source = new IgnorableVertex(line.split(":")[0]);
+            val targets = stream(line.split(": ")[1].split(" "))
+                    .map(IgnorableVertex::new).toList();
+            targets.forEach(target -> serverRack.addEdge(source, target));
         });
 
         serverRackReversed = new EdgeReversedGraph<>(serverRack);
@@ -65,7 +85,9 @@ public final class Day11 extends BaseSolution2 {
     @Override
     protected long part1() {
         if (read.inputType() == EXAMPLE2)  return 0;
-        return new AllDirectedPaths<>(serverRack).getAllPaths("you", "out", true, null).size();
+        return new AllDirectedPaths<>(serverRack)
+                .getAllPaths(new IgnorableVertex("you"), new IgnorableVertex("out"), true, null)
+                .size();
     }
 
     @Override
@@ -75,24 +97,19 @@ public final class Day11 extends BaseSolution2 {
         // Found in a visualization of the graph that all paths _first_ visit `fft`, _then_ `dac`.
         // We therefore only consider that order - the performance is horrible when trying to
         // consider the `svr-dac-fft-out` order too.
-        val verticesToIgnore = new TreeSet<String>();
-        val svr2fft = getNumberOfPathsFromTo("svr", "fft", verticesToIgnore);
-        val fft2dac = getNumberOfPathsFromTo("fft", "dac", verticesToIgnore);
-        val dac2out = getNumberOfPathsFromTo("dac", "out", verticesToIgnore);
+        val svr2fft = getNumberOfPathsFromTo(new IgnorableVertex("svr"), new IgnorableVertex("fft"));
+        val fft2dac = getNumberOfPathsFromTo(new IgnorableVertex("fft"), new IgnorableVertex("dac"));
+        val dac2out = getNumberOfPathsFromTo(new IgnorableVertex("dac"), new IgnorableVertex("out"));
 
         return svr2fft * fft2dac * dac2out;
     }
 
-    private long getNumberOfPathsFromTo(
-            final String from,
-            final String to,
-            final Set<String> verticesToIgnore
-    ) {
+    private long getNumberOfPathsFromTo(final IgnorableVertex from, final IgnorableVertex to) {
         val paths = new AllDirectedPaths<>(serverRackReversed,
-                (_, edge) -> !verticesToIgnore.contains(edge.getTarget()))
+                (_, edge) -> !edge.getTarget().isIgnored())
                 .getAllPaths(to, from, true, null);
-        verticesToIgnore.addAll(paths.stream().map(GraphPath::getVertexList)
-                .flatMap(List::stream).collect(toSet()));
+        paths.stream().map(GraphPath::getVertexList).flatMap(List::stream)
+                .distinct().forEach(IgnorableVertex::ignore);
         return paths.size();
     }
 
