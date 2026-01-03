@@ -14,6 +14,8 @@ Same as last year, using a lot of Java Streams plus the all-new Gatherer API. Al
 Java 25 to explore some of the new language features.
 
   - **Day 10.** Part 2 took 641 seconds to solve. Could probably do with some optimization...
+  - **Day 11.** Part 2 took 30 seconds to solve. Could probably do with some optimization, even
+    though I already started using JGraphT because I did not trust my own implementation... 
 
 ## 2024
 

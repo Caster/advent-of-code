@@ -14,7 +14,8 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
         <!-- Libraries -->
-        <choco-solver.version>4.10.14</choco-solver.version>
+        <choco-solver.version>4.10.18</choco-solver.version>
+        <jgrapht.version>1.5.2</jgrapht.version>
         <lombok.version>1.18.42</lombok.version>
 
         <!-- Maven plugins -->
@@ -34,6 +35,11 @@
             <groupId>org.choco-solver</groupId>
             <artifactId>choco-solver</artifactId>
             <version>${choco-solver.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jgrapht</groupId>
+            <artifactId>jgrapht-core</artifactId>
+            <version>${jgrapht.version}</version>
         </dependency>
     </dependencies>
 
