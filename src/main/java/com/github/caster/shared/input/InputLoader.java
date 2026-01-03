@@ -6,7 +6,6 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
-import java.util.Optional;
 import java.util.function.UnaryOperator;
 import java.util.regex.Pattern;
 
@@ -17,11 +16,18 @@ import static java.util.Arrays.stream;
 
 public final class InputLoader {
 
-    public static Optional<String> getSolutionClassName() {
-        return stream(Thread.currentThread().getStackTrace())
-                .filter(el -> el.getClassName().startsWith("com.github.caster.solutions"))
-                .findFirst()
-                .map(StackTraceElement::getClassName);
+    public static boolean exists(final InputType inputToCheck) {
+        return determineUrl(inputToCheck) != null;
+    }
+
+    private static URL determineUrl(final InputType inputType) {
+        val directory = formatYearDay("%s/%s").apply(getSolutionClassName());
+        val resourceBaseName = inputType.name().toLowerCase();
+        return InputLoader.class.getResource("/%s/%s.txt".formatted(directory, resourceBaseName));
+    }
+
+    public static String getSolutionClassName() {
+        return System.getProperty("sun.java.command");
     }
 
     public static UnaryOperator<String> formatYearDay(final String format) {
@@ -42,6 +48,7 @@ public final class InputLoader {
         EXAMPLE,
         EXAMPLE2,
         INPUT
+
     }
 
     private static final Pattern YEAR_PART = Pattern.compile("\\.y(\\d{4})\\.");
@@ -50,16 +57,6 @@ public final class InputLoader {
 
     @Delegate
     private Section section;
-
-    public boolean exists(final InputType inputToCheck) {
-        return determineUrl(inputToCheck) != null;
-    }
-
-    private URL determineUrl(final InputType inputType) {
-        val directory = getSolutionClassName().map(formatYearDay("%s/%s")).orElseThrow();
-        val resourceBaseName = inputType.name().toLowerCase();
-        return InputLoader.class.getResource("/%s/%s.txt".formatted(directory, resourceBaseName));
-    }
 
     public void from(final InputType inputToLoad) {
         val resourceUrl = determineUrl(inputToLoad);
@@ -81,6 +78,14 @@ public final class InputLoader {
 
     public static List<Long> asList(final long[] array) {
         return stream(array).boxed().toList();
+    }
+
+    public static int[] parseInts(final String input) {
+        return stream(parseColumns(input)).mapToInt(Integer::parseInt).toArray();
+    }
+
+    public static int[] parseInts(final String input, final String splitByRegex) {
+        return stream(parseColumns(input, splitByRegex)).mapToInt(Integer::parseInt).toArray();
     }
 
     public static long[] parseLongs(final String input) {

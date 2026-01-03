@@ -1,11 +1,12 @@
 package com.github.caster.shared;
 
 import java.time.Duration;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
 import java.util.PrimitiveIterator.OfInt;
+import java.util.Queue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
@@ -17,20 +18,21 @@ import com.github.caster.shared.input.InputLoader.InputType;
 import lombok.SneakyThrows;
 import lombok.val;
 
+import static com.github.caster.shared.input.InputLoader.exists;
 import static com.github.caster.shared.input.InputLoader.formatYearDay;
+import static com.github.caster.shared.input.InputLoader.getSolutionClassName;
 import static java.lang.Character.isDigit;
 import static java.lang.Character.isEmoji;
 import static java.lang.Math.abs;
 import static java.time.Instant.now;
 import static java.util.Comparator.comparingInt;
-import static java.util.stream.Collectors.joining;
+import static java.util.List.of;
 import static java.util.stream.IntStream.iterate;
 import static java.util.stream.IntStream.range;
 
 public abstract class BaseSolution2 {
 
-    private static final Iterator<InputType> INPUT_TYPE_ITERATOR =
-            Arrays.stream(InputType.values()).iterator();
+    private static final Queue<InputType> INPUT_TYPES = new ArrayDeque<>(of(InputType.values()));
     private static final OfInt PART_ITERATOR = iterate(0, p -> (p + 1) % 3).iterator();
     private static final Expectations EXPECTATIONS;
 
@@ -39,7 +41,7 @@ public abstract class BaseSolution2 {
     static {
         Expectations expectationsToLoad;
         try {
-            val solutionClass = Class.forName(System.getProperty("sun.java.command"));
+            val solutionClass = Class.forName(getSolutionClassName());
             val expectationsMethod = solutionClass.getDeclaredMethod("expectations");
             expectationsToLoad = (Expectations) expectationsMethod.invoke(null);
         } catch (final Exception _) {
@@ -52,10 +54,7 @@ public abstract class BaseSolution2 {
 
     protected BaseSolution2() {
         read = new InputLoader();
-        do {
-            currentInputType = INPUT_TYPE_ITERATOR.next();
-        } while (!read.exists(currentInputType));
-        read.from(currentInputType);
+        read.from(currentInputType = INPUT_TYPES.poll());
     }
 
     protected abstract long part1();
@@ -66,13 +65,18 @@ public abstract class BaseSolution2 {
 
     static void main() {
         val day = formatYearDay("%2$s").andThen(dayPart -> dayPart.substring(3))
-                .apply(System.getProperty("sun.java.command"));
+                .apply(getSolutionClassName());
         val resultsTable = new ArrayList<List<String>>();
         resultsTable.add(List.of("Day " + day, "Setup", "Part 1", "", "Part 2", ""));
 
         IO.println();
 
-        while (INPUT_TYPE_ITERATOR.hasNext()) {
+        while (!INPUT_TYPES.isEmpty()) {
+            if (!exists(INPUT_TYPES.peek())) {
+                INPUT_TYPES.poll();
+                continue;
+            }
+
             val solutionReference = new AtomicReference<BaseSolution2>();
             val setupTime = time(() -> load(solutionReference)).skip(1).findFirst().orElseThrow();
             val solution = solutionReference.get();
@@ -123,8 +127,7 @@ public abstract class BaseSolution2 {
     @SneakyThrows
     private static long load(final AtomicReference<BaseSolution2> solutionReference) {
         solutionReference.set(
-                (BaseSolution2) Class.forName(System.getProperty("sun.java.command"))
-                        .getConstructor().newInstance()
+                (BaseSolution2) Class.forName(getSolutionClassName()).getConstructor().newInstance()
         );
         return 0;
     }
@@ -132,16 +135,12 @@ public abstract class BaseSolution2 {
     private static void printTable(final List<List<String>> table) {
         // determine column widths
         val numCols = table.getFirst().size();
-        val widestRowPerColumn = range(0, numCols)
+        val columnWidths = range(0, numCols)
                 .mapToObj(columnIndex -> table.stream()
                         .map(row -> row.get(columnIndex))
                         .max(comparingInt(BaseSolution2::stringLengthEmojiAs2)).orElseThrow())
-                .toList();
-        val columnWidths = widestRowPerColumn.stream()
                 .mapToInt(BaseSolution2::stringLengthEmojiAs2).toArray();
         columnWidths[0] *= -1; // left-align first column
-        val columnWidthsWithoutEmojiCorrections = widestRowPerColumn.stream()
-                .mapToInt(String::length).toArray();
 
         // print headers
         val rowIterator = table.iterator();
@@ -171,11 +170,16 @@ public abstract class BaseSolution2 {
         }
 
         // print data rows
-        val format = Arrays.stream(columnWidthsWithoutEmojiCorrections)
-                .mapToObj(width -> "%" + width + "s")
-                .collect(joining(" | "));
         while (rowIterator.hasNext()) {
-            IO.println(format.formatted(rowIterator.next().toArray()));
+            val row = rowIterator.next();
+            printWithWidth(row.getFirst(), columnWidths[0]);
+            for (int i = 1; i < numCols; i++) {
+                val column = row.get(i);
+                val columnWidth = columnWidths[i] - (stringLengthEmojiAs2(column) - column.length());
+                IO.print(" | ");
+                printWithWidth(column, columnWidth);
+            }
+            IO.println();
         }
     }
 

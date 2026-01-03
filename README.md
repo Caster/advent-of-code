@@ -8,6 +8,13 @@ this project uses Maven, I run each solution individually in
 
 Issues with ideas or suggestions are welcome, but no spoilers please.
 
+## 2025
+
+Same as last year, using a lot of Java Streams plus the all-new Gatherer API. Also switched to
+Java 25 to explore some of the new language features.
+
+  - **Day 10.** Part 2 took 641 seconds to solve. Could probably do with some optimization...
+
 ## 2024
 
 My goal this year is to use Java Streams as much as possible, to get to known them in depth. This
