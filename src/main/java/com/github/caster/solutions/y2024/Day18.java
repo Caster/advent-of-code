@@ -1,23 +1,26 @@
 package com.github.caster.solutions.y2024;
 
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import com.github.caster.shared.BaseSolution;
 import com.github.caster.shared.map.Position;
 import com.github.caster.shared.map.ResettableMap;
 import com.github.caster.shared.math.Vector;
-import lombok.val;
 
-import java.util.*;
+import lombok.val;
 
 import static com.github.caster.shared.input.InputLoader.InputType.EXAMPLE;
 import static com.github.caster.shared.input.InputLoader.InputType.INPUT;
 import static com.github.caster.shared.input.InputLoader.parseLongs;
 import static com.github.caster.shared.map.ResettableMap.Cell.cellValueIs;
 import static java.util.function.Predicate.not;
-import static java.util.stream.IntStream.range;
 
 public final class Day18 extends BaseSolution {
 
-    private final int size;
     private final ResettableMap map;
     private final Map<Position, ParentEntry> parent;
     private final int initiallySimulatedBytes;
@@ -26,8 +29,8 @@ public final class Day18 extends BaseSolution {
 
     public Day18() {
         read.from(INPUT);
-        size = read.inputType() == EXAMPLE ? 7 : 71;
-        map = new ResettableMap(range(0, size).mapToObj(_ -> ".".repeat(size).toCharArray()).toArray(char[][]::new));
+        val size = read.inputType() == EXAMPLE ? 7 : 71;
+        map = ResettableMap.empty(size, size);
         parent = new HashMap<>();
         initiallySimulatedBytes = read.inputType() == EXAMPLE ? 12 : 1024;
         sourcePosition = new Position(0, 0);

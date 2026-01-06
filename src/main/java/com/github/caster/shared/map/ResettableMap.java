@@ -76,6 +76,14 @@ public final class ResettableMap {
 
     }
 
+    public static ResettableMap empty(final int width, final int height) {
+        return new ResettableMap(
+                range(0, height)
+                        .mapToObj(_ -> ".".repeat(width).toCharArray())
+                        .toArray(char[][]::new)
+        );
+    }
+
     public final int numRows;
     public final int numColumns;
 
