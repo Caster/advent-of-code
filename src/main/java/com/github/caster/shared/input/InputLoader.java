@@ -12,6 +12,7 @@ import java.util.regex.Pattern;
 import lombok.experimental.Delegate;
 import lombok.val;
 
+import static java.lang.Integer.parseInt;
 import static java.util.Arrays.stream;
 
 public final class InputLoader {
@@ -21,7 +22,7 @@ public final class InputLoader {
     }
 
     private static URL determineUrl(final InputType inputType) {
-        val directory = formatYearDay("%s/%s").apply(getSolutionClassName());
+        val directory = formatYearDay("%1$d/day%3$d").apply(getSolutionClassName());
         val resourceBaseName = inputType.name().toLowerCase();
         return InputLoader.class.getResource("/%s/%s.txt".formatted(directory, resourceBaseName));
     }
@@ -38,9 +39,12 @@ public final class InputLoader {
                         "Could not find year part in FQCN [%s]".formatted(fqcn)
                 );
             }
-            val yearPart = yearMatcher.group(1);
-            val dayPart = fqcn.substring(fqcn.lastIndexOf('.') + 1).toLowerCase();
-            return format.formatted(yearPart, dayPart);
+            val yearPart = parseInt(yearMatcher.group(1));
+            val dayIndex = fqcn.lastIndexOf('.') + 1;
+            val dayPart = fqcn.substring(dayIndex).toLowerCase();
+            val dayMatcher = DAY_PART.matcher(dayPart);
+            val dayNumber = dayMatcher.find() ? parseInt(dayMatcher.group()) : 0;
+            return format.formatted(yearPart, dayPart, dayNumber);
         };
     }
 
@@ -52,6 +56,7 @@ public final class InputLoader {
     }
 
     private static final Pattern YEAR_PART = Pattern.compile("\\.y(\\d{4})\\.");
+    private static final Pattern DAY_PART = Pattern.compile("\\d+");
 
     private InputType inputType;
 

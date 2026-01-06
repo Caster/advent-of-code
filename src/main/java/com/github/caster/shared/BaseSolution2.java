@@ -64,8 +64,7 @@ public abstract class BaseSolution2 {
     }
 
     static void main() {
-        val day = formatYearDay("%2$s").andThen(dayPart -> dayPart.substring(3))
-                .apply(getSolutionClassName());
+        val day = formatYearDay("%3$d").apply(getSolutionClassName());
         val resultsTable = new ArrayList<List<String>>();
         resultsTable.add(List.of("Day " + day, "Setup", "Part 1", "", "Part 2", ""));
 
